@@ -43,13 +43,16 @@ class SerialWakeProtocol:
             else:
                 return list()
 
-    def send_data(self, address: int, command: int, data_lst: list) -> bool:
+    def send_data(self, address: int, command: int, data_s: [list, int]) -> bool:
         if address > 0x80 or command > 0x7F or not self.__connected:
             return False
 
-        in_data = data_lst.copy()
+        if type(data_s) == list:
+            in_data = data_s.copy()
+        else:
+            in_data = [data_s]
         data_to_send = list()
-        n = n = len(in_data)
+        n = len(in_data)
 
         if address == -1:
             in_data.append(calculate_crc([FEND, command, n, *in_data]))
