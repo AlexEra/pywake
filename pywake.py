@@ -72,7 +72,6 @@ class SerialWakeProtocol:
 
         data_to_send = bytearray(data_to_send)
         self.serial_conn.write(data_to_send)
-        print(data_to_send)  ##################
         return True
 
     def check_crc(self) -> bool:
