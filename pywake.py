@@ -54,22 +54,24 @@ class SerialWakeProtocol:
         data_to_send = list()
         n = len(in_data)
 
+        crc8 = 0
         if address == -1:
-            in_data.append(calculate_crc([FEND, command, n, *in_data]))
+            crc8 = calculate_crc([FEND, command, n])  # initial crc8 value
             data_to_send = [FEND, command, *self.__stuffing(n)]   
         else:
-            in_data.append(calculate_crc([FEND, address, command, n, *in_data]))
+            crc8 = calculate_crc([FEND, address, command, n])  # initial crc8 value
             address |= 0x80
             data_to_send = [FEND, *self.__stuffing(address), command, *self.__stuffing(n)]        
 
-        for i in range(n + 1):  # including crc byte
+        for i in range(n):
+            crc8 = crc_table[crc8 ^ in_data[i]]  # cyclic crc8 computing
             tmp = self.__stuffing(in_data[i])
             if len(tmp) == 1:
                 data_to_send.append(*tmp)
             elif len(tmp) == 2:
                 data_to_send.append(tmp[0])
                 data_to_send.append(tmp[1])
-
+        data_to_send.append(crc8)
         data_to_send = bytearray(data_to_send)
         self.serial_conn.write(data_to_send)
         return True
